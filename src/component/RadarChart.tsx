@@ -150,6 +150,8 @@ const RadarChart = () => {
                             <div
                                 onClick={() => handleLabelClick(i)}
                                 style={{
+                                    padding: 10,
+                                    borderRadius: 10,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
@@ -162,7 +164,7 @@ const RadarChart = () => {
                                 <div style={{ fontWeight: 600, marginBottom: 4 }}>{label}</div>
                                 <div style={{
                                     backgroundColor: selectedLabel === i ? '#000' : '#5F4EFF',
-                                    borderRadius: '50%',
+                                    borderRadius: '5px',
                                     width: 24,
                                     height: 24,
                                     display: 'flex',
