@@ -1,11 +1,41 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import './RadarChart.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faShieldHalved,
+    faCloud,
+    faGlobe,
+    faEye,
+    faDatabase,
+    faEnvelope,
+    faDesktop,
+    faGlasses,
+    faGraduationCap
+} from '@fortawesome/free-solid-svg-icons';
 
 const labels = [
-    "Phishing Simulations", "Cloud Posture", "External Footprint",
-    "Dark Web", "Cloud Data", "Email Protection",
-    "Endpoint Security", "Secure Browsing", "Security Awareness"
+    'Phishing Simulations',
+    'Cloud Posture',
+    'External Footprint',
+    'Dark Web',
+    'Cloud Data',
+    'Email Protection',
+    'Endpoint Security',
+    'Secure Browsing',
+    'Security Awareness'
+];
+
+const icons = [
+    faShieldHalved,
+    faCloud,
+    faGlobe,
+    faEye,
+    faDatabase,
+    faEnvelope,
+    faDesktop,
+    faGlasses,
+    faGraduationCap
 ];
 
 type Dot = {
@@ -16,7 +46,6 @@ type Dot = {
     label: string;
 };
 
-// Convert polar to cartesian
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
     const rad = (angleDeg - 90) * Math.PI / 180;
     return {
@@ -25,7 +54,6 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
     };
 }
 
-// Describe rotating arc
 function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
@@ -48,7 +76,6 @@ const RadarChart = () => {
     const radius = 160;
     const angleStep = (2 * Math.PI) / labels.length;
 
-    // Generate dots
     useEffect(() => {
         const generatedDots: Dot[] = Array.from({ length: 12 }).map((_, i) => {
             const r = Math.random() * 120;
@@ -64,11 +91,10 @@ const RadarChart = () => {
         setDots(generatedDots);
     }, []);
 
-    // Animate scan
     useEffect(() => {
         let frameId: number;
         const animate = () => {
-            const angle = (Date.now() / 25) % 360; // 2x faster
+            const angle = (Date.now() / 25) % 360;
             setScanAngle(angle);
             if (scanRef.current) {
                 scanRef.current.setAttribute('transform', `rotate(${angle})`);
@@ -79,7 +105,6 @@ const RadarChart = () => {
         return () => cancelAnimationFrame(frameId);
     }, []);
 
-    // Dot click
     const handleDotClick = (id: number) => {
         setSelectedDot(id);
         const dot = dots.find(d => d.id === id);
@@ -88,7 +113,6 @@ const RadarChart = () => {
         }
     };
 
-    // Label click
     const handleLabelClick = (index: number) => {
         setSelectedLabel(index);
         alert(`Clicked label: ${labels[index]}`);
@@ -103,12 +127,10 @@ const RadarChart = () => {
                 </linearGradient>
             </defs>
 
-            {/* Rings */}
             {[53, 106, 160].map((r, i) => (
                 <circle key={i} r={r} stroke="#D2D6D9" fill="none" strokeOpacity="0.6" />
             ))}
 
-            {/* Spokes + Labels */}
             {labels.map((label, i) => {
                 const angle = angleStep * i;
                 const x = Math.cos(angle) * radius;
@@ -117,25 +139,44 @@ const RadarChart = () => {
                 return (
                     <g key={i}>
                         <line x1="0" y1="0" x2={x} y2={y} stroke="#D2D6D9" strokeOpacity="1" />
-                        <text
-                            x={x * 1}
-                            y={y * 1}
-                            enableBackground={'red'}
-                            fontSize="10"
-                            fontWeight="700"
-                            textAnchor="middle"
-                            alignmentBaseline="middle"
-                            fill={i === selectedLabel ? '#5F4EFF' : '#8C8F94'}
-                            onClick={() => handleLabelClick(i)}
-                            style={{ cursor: 'pointer' }}
+
+                        <foreignObject
+                            x={x * 1.15 - 40}
+                            y={y * 1.15 - 40}
+                            width="80"
+                            height="80"
+                            style={{ overflow: 'visible' }}
                         >
-                            {label}
-                        </text>
+                            <div
+                                onClick={() => handleLabelClick(i)}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    color: selectedLabel === i ? '#5F4EFF' : '#8C8F94',
+                                    fontSize: 10
+                                }}
+                            >
+                                <div style={{ fontWeight: 600, marginBottom: 4 }}>{label}</div>
+                                <div style={{
+                                    backgroundColor: selectedLabel === i ? '#000' : '#5F4EFF',
+                                    borderRadius: '50%',
+                                    width: 24,
+                                    height: 24,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}>
+                                    <FontAwesomeIcon icon={icons[i]} color="white" size="sm" />
+                                </div>
+                            </div>
+                        </foreignObject>
                     </g>
                 );
             })}
 
-            {/* Dots */}
             {dots.map((dot) => {
                 const diff = Math.abs((dot.angle - scanAngle + 360) % 360);
                 const isInScan = diff < 6 || diff > 354;
@@ -157,12 +198,8 @@ const RadarChart = () => {
                 );
             })}
 
-            {/* Rotating Scan Beam */}
             <g ref={scanRef}>
-                <path
-                    d={describeArc(0, 0, 160, 0, 45)}
-                    fill="url(#radarGradient)"
-                />
+                <path d={describeArc(0, 0, 160, 0, 45)} fill="url(#radarGradient)" />
             </g>
         </svg>
     );
