@@ -133,6 +133,7 @@ const RadarChart = () => {
 
             {selectedLabel !== null && (
                 <path
+                    className="selection"
                     d={describeArc(
                         0,
                         0,
@@ -140,8 +141,8 @@ const RadarChart = () => {
                         (selectedLabel * angleStep) - angleStep / 2,
                         (selectedLabel * angleStep) + angleStep / 2
                     )}
-                    fill="rgba(95, 78, 255, 0.1)"
-                    stroke="rgba(95, 78, 255, 0.3)"
+                    fill="rgba(95, 78, 255, 0.6)"
+                    stroke="rgba(95, 78, 255, 0)"
                     strokeWidth="1"
                 />
             )}
@@ -156,6 +157,7 @@ const RadarChart = () => {
                         <line x1="0" y1="0" x2={x} y2={y} stroke="#D2D6D9" strokeOpacity="1" />
 
                         <foreignObject
+                            className="card"
                             x={x * 1.15 - 40}
                             y={y * 1.15 - 40}
                             width="80"

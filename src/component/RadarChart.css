@@ -7,12 +7,19 @@
     overflow: visible;
     display: block;
     margin: auto;
+    transform: rotate(60deg);
 }
 
 .radar-dot {
     fill: #5F4EFF;
     animation: pulse 2s ease-in-out infinite;
     transition: r 0.2s, stroke 0.2s, opacity 0.2s;
+}
+.selection {
+    transform: rotate(-60deg);
+}
+.card {
+    transform: rotate(-60deg);
 }
 
 @keyframes pulse {
