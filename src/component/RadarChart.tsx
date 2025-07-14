@@ -38,14 +38,6 @@ const icons = [
     faGraduationCap
 ];
 
-type Dot = {
-    id: number;
-    x: number;
-    y: number;
-    angle: number;
-    label: string;
-};
-
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
     const rad = (angleDeg - 90) * Math.PI / 180;
     return {
@@ -57,34 +49,35 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
 function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
-    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
 
     return [
-        "M", x, y,
-        "L", start.x, start.y,
-        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
-        "Z"
-    ].join(" ");
+        'M', x, y,
+        'L', start.x, start.y,
+        'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+        'Z'
+    ].join(' ');
 }
 
 const RadarChart = () => {
     const scanRef = useRef<SVGGElement | null>(null);
-    const [dots, setDots] = useState<Dot[]>([]);
+    const [dots, setDots] = useState<any[]>([]);
     const [selectedDot, setSelectedDot] = useState<number | null>(null);
     const [selectedLabel, setSelectedLabel] = useState<number | null>(null);
     const [scanAngle, setScanAngle] = useState(0);
     const radius = 160;
-    const angleStep = (2 * Math.PI) / labels.length;
+    const angleStep = 360 / labels.length;
 
     useEffect(() => {
-        const generatedDots: Dot[] = Array.from({ length: 12 }).map((_, i) => {
+        const generatedDots = Array.from({ length: 12 }).map((_, i) => {
             const r = Math.random() * 120;
-            const a = Math.random() * 2 * Math.PI;
+            const a = Math.random() * 360;
+            const rad = (a * Math.PI) / 180;
             return {
                 id: i,
-                x: Math.cos(a) * r,
-                y: Math.sin(a) * r,
-                angle: (a * 180) / Math.PI,
+                x: Math.cos(rad) * r,
+                y: Math.sin(rad) * r,
+                angle: a,
                 label: `Dot ${i + 1}`
             };
         });
@@ -115,11 +108,10 @@ const RadarChart = () => {
 
     const handleLabelClick = (index: number) => {
         setSelectedLabel(index);
-        alert(`Clicked label: ${labels[index]}`);
     };
 
     return (
-        <svg viewBox="-200 -200 400 400" className="radar-chart">
+        <svg viewBox="-210 -210 420 420" className="radar-chart">
             <defs>
                 <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="rgba(95, 78, 255, 0)" />
@@ -128,16 +120,39 @@ const RadarChart = () => {
             </defs>
 
             {[53, 106, 160].map((r, i) => (
-                <circle key={i} r={r} stroke="#D2D6D9" fill="none" strokeOpacity="0.6" />
+                <circle
+                    key={i}
+                    r={r}
+                    stroke="#D2D6D9"
+                    strokeWidth={1}
+                    fill="none"
+                    strokeOpacity="0.6"
+                    shapeRendering="geometricPrecision"
+                />
             ))}
 
+            {selectedLabel !== null && (
+                <path
+                    d={describeArc(
+                        0,
+                        0,
+                        radius,
+                        (selectedLabel * angleStep) - angleStep / 2,
+                        (selectedLabel * angleStep) + angleStep / 2
+                    )}
+                    fill="rgba(95, 78, 255, 0.1)"
+                    stroke="rgba(95, 78, 255, 0.3)"
+                    strokeWidth="1"
+                />
+            )}
+
             {labels.map((label, i) => {
-                const angle = angleStep * i;
+                const angle = ((i * angleStep - 90) * Math.PI) / 180;
                 const x = Math.cos(angle) * radius;
                 const y = Math.sin(angle) * radius;
 
                 return (
-                    <g key={i}>
+                    <g key={i} onClick={() => handleLabelClick(i)} style={{ cursor: 'pointer' }}>
                         <line x1="0" y1="0" x2={x} y2={y} stroke="#D2D6D9" strokeOpacity="1" />
 
                         <foreignObject
@@ -148,7 +163,6 @@ const RadarChart = () => {
                             style={{ overflow: 'visible' }}
                         >
                             <div
-                                onClick={() => handleLabelClick(i)}
                                 style={{
                                     padding: 10,
                                     borderRadius: 10,
@@ -156,15 +170,14 @@ const RadarChart = () => {
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     textAlign: 'center',
-                                    cursor: 'pointer',
                                     color: selectedLabel === i ? '#5F4EFF' : '#8C8F94',
                                     fontSize: 10
                                 }}
                             >
                                 <div style={{ fontWeight: 600, marginBottom: 4 }}>{label}</div>
                                 <div style={{
-                                    backgroundColor: selectedLabel === i ? '#000' : '#5F4EFF',
-                                    borderRadius: '5px',
+                                    backgroundColor: '#5F4EFF',
+                                    borderRadius: '50%',
                                     width: 24,
                                     height: 24,
                                     display: 'flex',
@@ -189,6 +202,7 @@ const RadarChart = () => {
                         cx={dot.x}
                         cy={dot.y}
                         r={selectedDot === dot.id || isInScan ? 6 : 4}
+                        fill="#5F4EFF"
                         className="radar-dot"
                         onClick={() => handleDotClick(dot.id)}
                         style={{
